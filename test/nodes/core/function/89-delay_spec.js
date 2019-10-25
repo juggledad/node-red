@@ -256,6 +256,7 @@ describe('delay Node', function() {
             var receiveTimestamp;
 
             helperNode1.on("input", function(msg) {
+                console.log(" -> ",Date.now(),msg.payload);
                 if (receiveTimestamp) {
                     var elapse = process.hrtime(receiveTimestamp);
                     var receiveInterval = (elapse[0] * 1000) + ((elapse[1] / nanosToSeconds) * 1000);
@@ -271,17 +272,21 @@ describe('delay Node', function() {
             delayNode1.receive({payload:i});
             i++;
             for (; i < possibleMaxMessageCount + 1; i++) {
+                let c = i;
                 setTimeout(function() {
-                    delayNode1.receive({payload:i});
+                    delayNode1.receive({payload:c});
                 }, 2 * ((rate * i) / possibleMaxMessageCount) );
+                console.log("Delay",2 * ((rate * i) / possibleMaxMessageCount))
             }
 
             //we need to send a message delayed so that it doesn't get dropped
             setTimeout(function() {
+                console.log("+1",Date.now(),"checking");
                 delayNode1.receive({payload:++i});
             }, runtimeInMillis - 300); // should give enough time to squeeze another message in
-
+console.log("Final delay", runtimeInMillis - 300)
             setTimeout(function() {
+                console.log("!",Date.now(),"checking");
                 try {
                     receivedMessagesStack.length.should.be.lessThan(possibleMaxMessageCount + 1);
                     receivedMessagesStack.length.should.be.greaterThan(2); // ensure that we receive more than 1st and last message
